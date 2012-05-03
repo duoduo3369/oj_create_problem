@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}
+	<link rel="stylesheet" type="text/css" href="/images/global.css" media="all"/>
+{% endblock %}
+{% block content %}
+<div class = "contents">
+	<table align="center" cellspacing="0" cellpadding="0" width="980" border="0" style="word-wrap: break-word; ">
+		<tbody>
+		{% block table%}
+		{% endblock %}
+		
+		</tbody>
+	</table>
+	{% block pager%}
+	{% endblock %}
+</div>
+{% endblock %} 
