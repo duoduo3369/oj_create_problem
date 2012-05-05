@@ -1,8 +1,35 @@
 from django import forms
-from cup_oj.problem.models import CompileConfig, KeywordCheckConfig, ProblemMeta, Problem
+from cup_oj.problem.models import CompilableCodeGenerationConfig, CompileConfig, InputOutputData, KeywordCheckConfig, OutputCheckConfig, ProblemMeta, Problem
 from cup_oj.sa_conn import Session
 from django.utils.translation import ugettext, ugettext_lazy as _
 
+class CompilableCodeGenerationConfigForm(forms.Form):   
+    problem_meta_id = forms.ChoiceField(label=_('problem_meta_id'), choices = ()) 
+    code_type_id = forms.IntegerField(label=_('code_type_id'))
+    generation_method = forms.CharField(label=_(" generation_method"), max_length = 254)    
+    requirment = forms.IntegerField(label=_('requirment'))
+    
+    class Meta:
+        model = CompilableCodeGenerationConfig
+            
+    def __init__(self, *args, **kwargs):
+        super(CompilableCodeGenerationConfigForm, self).__init__(*args, **kwargs)
+        session = Session()
+        self.fields['problem_meta_id'].choices = [('', '----------')] + [(pm.id, pm.title) for pm in session.query(ProblemMeta).all()]
+        
+    def save(self, commit=True):
+        compilable_code_generation_config = CompilableCodeGenerationConfig() 
+        compilable_code_generation_config.problem_meta_id = self.cleaned_data['problem_meta_id']       
+        compilable_code_generation_config.code_type_id = self.cleaned_data['code_type_id']
+        compilable_code_generation_config.generation_method = self.cleaned_data['generation_method']  
+        compilable_code_generation_config.requirment = self.cleaned_data['requirment']      
+        
+        session = Session()
+        session.add(compilable_code_generation_config)
+        session.commit()
+        session.close()
+        
+        return  compilable_code_generation_config  
 
 class CompileConfigForm(forms.Form):   
     problem_meta_id = forms.ChoiceField(label=_('problem_meta_id'), choices = ()) 
@@ -29,6 +56,30 @@ class CompileConfigForm(forms.Form):
         session.close()
         
         return  compile_config
+
+class InputOutputDataForm(forms.Form):   
+    problem_meta_id = forms.ChoiceField(label=_('problem_meta_id'), choices = ()) 
+    name = forms.CharField(label=_("name"), max_length = 254)    
+
+    class Meta:
+        model = InputOutputData
+            
+    def __init__(self, *args, **kwargs):
+        super(InputOutputDataForm, self).__init__(*args, **kwargs)
+        session = Session()
+        self.fields['problem_meta_id'].choices = [('', '----------')] + [(pm.id, pm.title) for pm in session.query(ProblemMeta).all()]
+        
+    def save(self, commit=True):
+        input_output_data = InputOutputData() 
+        input_output_data.problem_meta_id = self.cleaned_data['problem_meta_id']       
+        input_output_data.name = self.cleaned_data['name']   
+        
+        session = Session()
+        session.add(input_output_data)
+        session.commit()
+        session.close()
+        
+        return  input_output_data
         
 class KeywordCheckConfigForm(forms.Form):    
     problem_meta_id = forms.ChoiceField(label=_('problem_meta_id'), choices = ())
@@ -46,8 +97,8 @@ class KeywordCheckConfigForm(forms.Form):
     def save(self, commit=True):
         keyword_check_config = KeywordCheckConfig()
         #keyword_check_config.problem_meta_id = int(self.cleaned_data['problem_meta_id'][0])
-        keyword_check_config.code_type = self.cleaned_data['code_type']
-        keyword_check_config.problem_meta_id = self.cleaned_data['problem_meta_id']        
+        keyword_check_config.problem_meta_id = self.cleaned_data['problem_meta_id']
+        keyword_check_config.code_type = self.cleaned_data['code_type']                
         keyword_check_config.word = self.cleaned_data['word']
         
         session = Session()
@@ -56,6 +107,40 @@ class KeywordCheckConfigForm(forms.Form):
         session.close()
         
         return  keyword_check_config
+
+class OutputCheckConfig(DeclarativeBase):
+    __tablename__ = 'OutputCheckConfig'
+
+    __table_args__ = {}
+
+    #column definitions
+    check_method = Column(u'check_method', VARCHAR(length=254))
+    id = Column(u'id', INTEGER(), primary_key=True, nullable=False)
+    problem_meta_id = Column(u'problem_meta_id', INTEGER(), ForeignKey('ProblemMeta.id'))
+
+class OutputCheckConfigForm(forms.Form):   
+    problem_meta_id = forms.ChoiceField(label=_('problem_meta_id'), choices = ()) 
+    check_method = forms.CharField(label=_("check_method"), max_length = 254)    
+
+    class Meta:
+        model = OutputCheckConfig
+            
+    def __init__(self, *args, **kwargs):
+        super(OutputCheckConfigForm, self).__init__(*args, **kwargs)
+        session = Session()
+        self.fields['problem_meta_id'].choices = [('', '----------')] + [(pm.id, pm.title) for pm in session.query(ProblemMeta).all()]
+        
+    def save(self, commit=True):
+        output_check_config = OutputCheckConfig() 
+        output_check_config.problem_meta_id = self.cleaned_data['problem_meta_id']       
+        output_check_config.check_method = self.cleaned_data['check_method']   
+        
+        session = Session()
+        session.add(output_check_config)
+        session.commit()
+        session.close()
+        
+        return  output_check_config
 
 class ProblemMetaForm(forms.Form):
     title = forms.CharField(label=_('title'))
