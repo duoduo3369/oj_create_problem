@@ -6,7 +6,7 @@
 	<form enctype = "multipart/form-data" method="post" action = "." name = "problem_meta_upload">
 
 	{% csrf_token%}
-	{{form.as_table}}	
+	{{form.as_p}}	
 	<br>
 	<br>
 	<input name = "submit" value = "提交" type = "submit" />
